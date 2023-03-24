@@ -11,8 +11,9 @@ def get_urls_from_page(url):
 
         for link in soup.find_all('a', href=True):
             href = link.get('href')
-            full_url = urljoin(url, href)
-            page_urls.add(full_url)
+            if href.lower().endswith('.pdf'):
+                full_url = urljoin(url, href)
+                page_urls.add(full_url)
 
         return page_urls
 
