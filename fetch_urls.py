@@ -27,7 +27,7 @@ def get_urls_from_page(url, error_file):
         return set()
 
 def main():
-    start_url = 'https://example.com'
+    start_url = 'https://www.riwaya.ga/riwayat_3alamiya.htm'
     
     with open('result_links.txt', 'w', encoding='utf-8') as output_file, \
          open('error_log.txt', 'w', encoding='utf-8') as error_file:
@@ -38,7 +38,8 @@ def main():
             output_file.write(f"URL: {url}\n")
             sub_urls = get_urls_from_page(url, error_file)
             for sub_url in sub_urls:
-                output_file.write(f"  - {sub_url}\n")
+                if sub_url.lower().endswith('.pdf'):
+                    output_file.write(f"PDF URL: {sub_url}\n")
 
 if __name__ == '__main__':
     main()
