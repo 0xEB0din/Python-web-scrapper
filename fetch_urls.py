@@ -28,49 +28,57 @@ def get_urls_from_page(url, error_file):
         error_file.write(f"Error: {e}\n")
         return set()
 
-def get_pdf_urls_from_page(url, error_file):
+def get_subpage_urls(url, error_file):
     try:
         response = requests.get(url)
         response.raise_for_status()
         response.encoding = 'utf-8'
         soup = BeautifulSoup(response.text, 'html.parser')
-        page_urls = set()
+        pdf_urls = set()
+        non_pdf_urls = set()
 
         for link in soup.find_all('a', href=True):
             href = link.get('href').strip()
-            if not href.lower().endswith('.pdf'):
-                continue
             decoded_href = unquote(href)
             full_url = urljoin(url, decoded_href)
             decoded_full_url = unquote(full_url)
-            page_urls.add(decoded_full_url)
+            
+            if decoded_full_url.lower().endswith('.pdf'):
+                pdf_urls.add(decoded_full_url)
+            else:
+                non_pdf_urls.add(decoded_full_url)
 
-        return page_urls
+        return pdf_urls, non_pdf_urls
 
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         error_file.write(f"Error: {e}\n")
-        return set()
+        return set(), set()
 
 def main():
     start_url = 'https://www.riwaya.ga/riwayat_3alamiya.htm'
 
     with open('result_links.txt', 'w', encoding='utf-8') as output_file, \
             open('error_log.txt', 'w', encoding='utf-8') as error_file, \
-            open('subpage_links.txt', 'w', encoding='utf-8') as subpage_file:
+            open('pdf_subpage_links.txt', 'w', encoding='utf-8') as pdf_subpage_file, \
+            open('non_pdf_subpage_links.txt', 'w', encoding='utf-8') as non_pdf_subpage_file:
 
         all_urls = get_urls_from_page(start_url, error_file)
 
         total_urls = 0
-        total_sub_urls = 0
+        total_pdf_sub_urls = 0
+        total_non_pdf_sub_urls = 0
         total_errors = 0
 
         for url in tqdm(all_urls, desc="Processing URLs", unit="url"):
             output_file.write(f"URL: {url}\n")
-            pdf_urls = get_pdf_urls_from_page(url, error_file)
-            total_sub_urls += len(pdf_urls)
+            pdf_urls, non_pdf_urls = get_subpage_urls(url, error_file)
+            total_pdf_sub_urls += len(pdf_urls)
+            total_non_pdf_sub_urls += len(non_pdf_urls)
             for pdf_url in pdf_urls:
-                subpage_file.write(f"PDF URL: {pdf_url}\n")
+                pdf_subpage_file.write(f"PDF URL: {pdf_url}\n")
+            for non_pdf_url in non_pdf_urls:
+                non_pdf_subpage_file.write(f"Non-PDF URL: {non_pdf_url}\n")
             total_urls += 1
 
         with open('error_log.txt', 'r', encoding='utf-8') as error_file:
@@ -78,7 +86,8 @@ def main():
 
         print(colored("\nProcessing completed!", "green"))
         print(colored(f"Total URLs processed: {total_urls}", "cyan"))
-        print(colored(f"Total PDF URLs found: {total_sub_urls}", "cyan"))
+        print(colored(f"Total PDF sub-URLs found: {total_pdf_sub_urls}", "cyan"))
+        print(colored(f"Total non-PDF sub-URLs found: {total_non_pdf_sub_urls}", "cyan"))
         print(colored(f"Total errors encountered: {total_errors}", "red"))
 
 if __name__ == '__main__':
