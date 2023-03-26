@@ -1,3 +1,4 @@
+import sys
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, unquote
@@ -55,9 +56,7 @@ def get_subpage_urls(url, error_file):
         error_file.write(f"Error: {e}\n")
         return set(), set()
 
-def main():
-    start_url = 'https://www.riwaya.ga/riwayat_3alamiya.htm'
-
+def main(start_url):
     with open('result_links.txt', 'w', encoding='utf-8') as output_file, \
             open('error_log.txt', 'w', encoding='utf-8') as error_file, \
             open('pdf_subpage_links.txt', 'w', encoding='utf-8') as pdf_subpage_file, \
@@ -91,4 +90,8 @@ def main():
         print(colored(f"Total errors encountered: {total_errors}", "red"))
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) < 2:
+        print("Usage: python script.py <start_url>")
+        sys.exit(1)
+    start_url = sys.argv[1]
+    main(start_url)
