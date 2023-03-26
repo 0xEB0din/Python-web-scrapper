@@ -28,6 +28,30 @@ def get_urls_from_page(url, error_file):
         error_file.write(f"Error: {e}\n")
         return set()
 
+def get_pdf_urls_from_page(url, error_file):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        response.encoding = 'utf-8'
+        soup = BeautifulSoup(response.text, 'html.parser')
+        page_urls = set()
+
+        for link in soup.find_all('a', href=True):
+            href = link.get('href').strip()
+            if not href.lower().endswith('.pdf'):
+                continue
+            decoded_href = unquote(href)
+            full_url = urljoin(url, decoded_href)
+            decoded_full_url = unquote(full_url)
+            page_urls.add(decoded_full_url)
+
+        return page_urls
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        error_file.write(f"Error: {e}\n")
+        return set()
+
 def main():
     start_url = 'https://www.riwaya.ga/riwayat_3alamiya.htm'
 
@@ -43,10 +67,10 @@ def main():
 
         for url in tqdm(all_urls, desc="Processing URLs", unit="url"):
             output_file.write(f"URL: {url}\n")
-            sub_urls = get_urls_from_page(url, error_file)
-            total_sub_urls += len(sub_urls)
-            for sub_url in sub_urls:
-                subpage_file.write(f"Subpage URL: {sub_url}\n")
+            pdf_urls = get_pdf_urls_from_page(url, error_file)
+            total_sub_urls += len(pdf_urls)
+            for pdf_url in pdf_urls:
+                subpage_file.write(f"PDF URL: {pdf_url}\n")
             total_urls += 1
 
         with open('error_log.txt', 'r', encoding='utf-8') as error_file:
@@ -54,7 +78,7 @@ def main():
 
         print(colored("\nProcessing completed!", "green"))
         print(colored(f"Total URLs processed: {total_urls}", "cyan"))
-        print(colored(f"Total sub-URLs found: {total_sub_urls}", "cyan"))
+        print(colored(f"Total PDF URLs found: {total_sub_urls}", "cyan"))
         print(colored(f"Total errors encountered: {total_errors}", "red"))
 
 if __name__ == '__main__':
