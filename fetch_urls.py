@@ -1,9 +1,12 @@
+import os
 import sys
 import requests
+import unicodedata
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, unquote
 from tqdm import tqdm
 from termcolor import colored
+
 
 def get_urls_from_page(url, error_file):
     try:
@@ -29,6 +32,7 @@ def get_urls_from_page(url, error_file):
         error_file.write(f"Error: {e}\n")
         return set()
 
+
 def get_subpage_urls(url, error_file):
     try:
         response = requests.get(url)
@@ -43,7 +47,7 @@ def get_subpage_urls(url, error_file):
             decoded_href = unquote(href)
             full_url = urljoin(url, decoded_href)
             decoded_full_url = unquote(full_url)
-            
+
             if decoded_full_url.lower().endswith('.pdf'):
                 pdf_urls.add(decoded_full_url)
             else:
@@ -56,6 +60,28 @@ def get_subpage_urls(url, error_file):
         error_file.write(f"Error: {e}\n")
         return set(), set()
 
+
+def download_pdf(url, folder_path, error_file):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+
+        # Extract filename from URL
+        filename = os.path.basename(url)
+
+        # Create full file path
+        file_path = os.path.join(folder_path, filename)
+
+        # Write file to disk
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
+
+        print(colored(f"PDF downloaded: {url}", "green"))
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        error_file.write(f"Error: {e}\n")
+
 def main(start_url):
     with open('result_links.txt', 'w', encoding='utf-8') as output_file, \
             open('error_log.txt', 'w', encoding='utf-8') as error_file, \
@@ -63,6 +89,13 @@ def main(start_url):
             open('non_pdf_subpage_links.txt', 'w', encoding='utf-8') as non_pdf_subpage_file:
 
         all_urls = get_urls_from_page(start_url, error_file)
+
+        # Create folder for PDF downloads
+        page_title = BeautifulSoup(requests.get(start_url).text, 'html.parser').title.string.strip()
+        folder_name = unquote(page_title).replace(' ', '_')
+        folder_name = folder_name.encode('utf-8').decode('unicode-escape')
+        folder_path = os.path.join(os.getcwd(), folder_name)
+        os.makedirs(folder_path, exist_ok=True)
 
         total_urls = 0
         total_pdf_sub_urls = 0
@@ -74,8 +107,11 @@ def main(start_url):
             pdf_urls, non_pdf_urls = get_subpage_urls(url, error_file)
             total_pdf_sub_urls += len(pdf_urls)
             total_non_pdf_sub_urls += len(non_pdf_urls)
+
             for pdf_url in pdf_urls:
                 pdf_subpage_file.write(f"PDF URL: {pdf_url}\n")
+                download_pdf(pdf_url, folder_path, error_file)
+
             for non_pdf_url in non_pdf_urls:
                 non_pdf_subpage_file.write(f"Non-PDF URL: {non_pdf_url}\n")
             total_urls += 1
@@ -88,6 +124,7 @@ def main(start_url):
         print(colored(f"Total PDF sub-URLs found: {total_pdf_sub_urls}", "cyan"))
         print(colored(f"Total non-PDF sub-URLs found: {total_non_pdf_sub_urls}", "cyan"))
         print(colored(f"Total errors encountered: {total_errors}", "red"))
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
