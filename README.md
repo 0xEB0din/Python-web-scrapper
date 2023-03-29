@@ -26,6 +26,7 @@ The argument passed to the script should be the URL of the website you want to s
 - [x] Add functionality to download the files from the URLs.
 - [x] Match the file names with the URLs to ensure correct downloading.
 - [x] Update the statistics after the download is complete.
-- [ ] Flush the session.
+- [x] Flush the session.
 
+### Known Bugs:
 
