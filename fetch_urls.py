@@ -105,6 +105,7 @@ def main(start_url):
         total_pdf_sub_urls = 0
         total_non_pdf_sub_urls = 0
         total_errors = 0
+        downloaded_files_count = 0
 
         for url in tqdm(all_urls, desc="Processing URLs", unit="url"):
             output_file.write(f"URL: {url}\n")
@@ -115,11 +116,12 @@ def main(start_url):
             for pdf_url in pdf_urls:
                 pdf_subpage_file.write(f"PDF URL: {pdf_url}\n")
                 download_pdf(pdf_url, folder_path, error_file)
+                downloaded_files_count += 1
 
             for non_pdf_url in non_pdf_urls:
                 non_pdf_subpage_file.write(f"Non-PDF URL: {non_pdf_url}\n")
             total_urls += 1
-
+        
         with open('error_log.txt', 'r', encoding='utf-8') as error_file:
             total_errors = sum(1 for line in error_file if "Error:" in line)
 
@@ -127,9 +129,8 @@ def main(start_url):
         print(colored(f"Total URLs processed: {total_urls}", "cyan"))
         print(colored(f"Total PDF sub-URLs found: {total_pdf_sub_urls}", "cyan"))
         print(colored(f"Total non-PDF sub-URLs found: {total_non_pdf_sub_urls}", "cyan"))
+        print(colored(f"Total files downloaded: {downloaded_files_count}", "cyan"))
         print(colored(f"Total errors encountered: {total_errors}", "red"))
-
-
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
