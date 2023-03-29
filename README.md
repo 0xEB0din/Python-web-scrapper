@@ -23,9 +23,9 @@ The argument passed to the script should be the URL of the website you want to s
 - [x] Modify the scraper to grab all links, not just PDFs.
 - [x] Save the non-PDF links to a separate file.
 - [x] Make the URL a command-line parameter instead of hard-coding it in the script.
-- [ ] Add functionality to download the files from the URLs.
-- [ ] Match the file names with the URLs to ensure correct downloading.
-- [ ] Update the statistics after the download is complete.
+- [x] Add functionality to download the files from the URLs.
+- [x] Match the file names with the URLs to ensure correct downloading.
+- [x] Update the statistics after the download is complete.
 - [ ] Flush the session.
 
 

@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, unquote
 from tqdm import tqdm
 from termcolor import colored
+import ftfy
 
 
 def get_urls_from_page(url, error_file):
@@ -91,9 +92,12 @@ def main(start_url):
         all_urls = get_urls_from_page(start_url, error_file)
 
         # Create folder for PDF downloads
-        page_title = BeautifulSoup(requests.get(start_url).text, 'html.parser').title.string.strip()
-        folder_name = unquote(page_title).replace(' ', '_')
-        folder_name = folder_name.encode('utf-8').decode('unicode-escape')
+        response = requests.get(start_url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        page_title = soup.title.string.strip()
+        fixed_title = ftfy.fix_text(page_title)
+        folder_name = fixed_title.replace(' ', '_')
         folder_path = os.path.join(os.getcwd(), folder_name)
         os.makedirs(folder_path, exist_ok=True)
 
@@ -124,6 +128,7 @@ def main(start_url):
         print(colored(f"Total PDF sub-URLs found: {total_pdf_sub_urls}", "cyan"))
         print(colored(f"Total non-PDF sub-URLs found: {total_non_pdf_sub_urls}", "cyan"))
         print(colored(f"Total errors encountered: {total_errors}", "red"))
+
 
 
 if __name__ == '__main__':
