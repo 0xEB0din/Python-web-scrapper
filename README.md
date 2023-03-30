@@ -6,8 +6,15 @@ This is a Python web scraper that fetches nested URLs up to two levels and grabs
 2. `pdf_subpage_links.txt`: Contains all URLs that end with `.pdf` found in the second level.
 3. `non_pdf_subpage_links.txt`: Contains all non-PDF URLs found in the second level.
 
-## Usage
+## Features
+1. Progress bar to display WIP status
+2. Download all URLs with .pdf extension
+3. Download all URLs from Google Drive
+4. Content-type checks for correct file format
+4. Statistics upon scraping completion
+5. Purge prompt for session flush
 
+## Usage
 To use the web scraper, run the following command in your terminal or shell environment:
 
 ```bash
