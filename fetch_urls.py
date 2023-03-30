@@ -69,6 +69,13 @@ def download_pdf(url, folder_path, error_file):
 
         # Extract filename from URL
         filename = os.path.basename(url)
+        if not filename.endswith('.pdf'):
+            content_disposition = response.headers.get('content-disposition')
+            if content_disposition:
+                filename = content_disposition.split('filename*=')[-1].split("''")[-1]
+                filename = unquote(filename)
+            else:
+                filename = f"file_{hash(url)}.pdf"
 
         # Create full file path
         file_path = os.path.join(folder_path, filename)
@@ -83,31 +90,20 @@ def download_pdf(url, folder_path, error_file):
         print(f"Error: {e}")
         error_file.write(f"Error: {e}\n")
 
+
 # New function to check and download PDFs
 def check_and_download_pdfs(url, folder_path, error_file):
     try:
         response = requests.get(url)
         response.raise_for_status()
-        response.encoding = 'utf-8'
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        pdf_urls = set()
-        for link in soup.find_all('a', href=True):
-            href = link.get('href').strip()
-            decoded_href = unquote(href)
-            full_url = urljoin(url, decoded_href)
-            decoded_full_url = unquote(full_url)
-
-            if decoded_full_url.lower().endswith('.pdf'):
-                pdf_urls.add(decoded_full_url)
-
-        for pdf_url in pdf_urls:
-            download_pdf(pdf_url, folder_path, error_file)
+        content_type = response.headers.get('content-type')
+        
+        if content_type == 'application/pdf':
+            download_pdf(url, folder_path, error_file)
 
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         error_file.write(f"Error: {e}\n")
-
 
 def main(start_url):
     with open('result_links.txt', 'w', encoding='utf-8') as output_file, \
@@ -146,10 +142,11 @@ def main(start_url):
 
             for non_pdf_url in non_pdf_urls:
                 non_pdf_subpage_file.write(f"Non-PDF URL: {non_pdf_url}\n")
+                # Check and download PDFs from non-PDF sub-URLs
+                check_and_download_pdfs(non_pdf_url, folder_path, error_file)
+                # Remove the following line, as the content type check will now handle the download count
+                # downloaded_files_count +=
 
-            # Check and download PDFs from non-PDF sub-URLs
-            check_and_download_pdfs(non_pdf_url, folder_path, error_file)
-            downloaded_files_count += len(pdf_urls)
             total_urls += 1
 
     with open('error_log.txt', 'r', encoding='utf-8') as error_file:
