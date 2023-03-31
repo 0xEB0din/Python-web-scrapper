@@ -21,7 +21,7 @@ To use the web scraper, run the following command in your terminal or shell envi
 $ python fetch_urls.py https://example.com/
 ```
 
-To download all files that has certain file extension(s)
+To download all files that has certain file extension(s) from a single page (same page level)
 ```bash
 $ python files_extension_fetch.py <url> <extension1> <extension2> ...
 ```
