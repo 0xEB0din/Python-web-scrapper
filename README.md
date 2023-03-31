@@ -20,8 +20,13 @@ To use the web scraper, run the following command in your terminal or shell envi
 ```bash
 $ python fetch_urls.py https://example.com/
 ```
-The argument passed to the script should be the URL of the website you want to scrape.
 
+To download all files that has certain file extension(s)
+```bash
+$ python files_extension_fetch.py <url> <extension1> <extension2> ...
+```
+
+The argument passed to the script should be the URL of the website you want to scrape.
 
 ### Todo List
 - [x] Use external files to store the URLs and errors.
@@ -34,6 +39,7 @@ The argument passed to the script should be the URL of the website you want to s
 - [x] Match the file names with the URLs to ensure correct downloading.
 - [x] Update the statistics after the download is complete.
 - [x] Flush the session.
+- [x] Download all URLs that has a certain file extension.
 
 ### Known Bugs:
 
