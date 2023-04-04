@@ -43,6 +43,5 @@ The argument passed to the script should be the URL of the website you want to s
 - [ ] Levels of scrapping should be dynamic to cover more use cases.
 - [ ] Allow the user to pass a parameter of # levels of scrapping.
 
-
 ### Known Bugs:
 
